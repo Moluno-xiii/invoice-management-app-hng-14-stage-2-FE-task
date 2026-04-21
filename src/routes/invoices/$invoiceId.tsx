@@ -1,25 +1,23 @@
 import Button from "@/components/shared/Button";
+import ErrorState from "@/components/shared/ErrorState";
+import InvoiceDetailsLoadingState from "@/components/shared/InvoiceDetailsLoadingState";
 import StatusTag from "@/components/shared/StatusTag";
-import { getInvoiceById } from "@/lib/invoice";
+import { useGetInvoiceById } from "@/hooks/tanstack/useGetInvoices";
 import type { Invoice, InvoiceFormValue } from "@/types";
 import {
   createFileRoute,
   Link,
-  notFound,
   useNavigate,
+  useRouter,
 } from "@tanstack/react-router";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { FaChevronLeft } from "react-icons/fa6";
 import DeleteInvoiceModal from "./-components/DeleteInvoiceModal";
 import EditInvoiceForm from "./-components/EditInvoiceForm";
 import InvoiceDetails from "./-components/InvoiceDetails";
+import MarkAsPaidModal from "./-components/MarkAsPaidModal";
 
 export const Route = createFileRoute("/invoices/$invoiceId")({
-  loader: ({ params }) => {
-    const invoice: Invoice | undefined = getInvoiceById(params.invoiceId);
-    if (!invoice) throw notFound();
-    return invoice;
-  },
   component: ViewInvoiceScreen,
 });
 
@@ -34,14 +32,76 @@ const toFormValue = (invoice: Invoice): InvoiceFormValue => ({
   items: invoice.items,
 });
 
+const BackLink = () => (
+  <Link
+    to="/invoices"
+    className="text-text group text-nm inline-flex flex-row items-center gap-x-6 font-bold tracking-[-0.25px] transition-opacity hover:opacity-70"
+  >
+    <FaChevronLeft size={10} className="text-primary" />
+    Go back
+  </Link>
+);
+
 function ViewInvoiceScreen() {
-  const invoice: Invoice = Route.useLoaderData();
+  const { invoiceId } = Route.useParams();
+  const router = useRouter();
+  const { data: invoice, isLoading, isError } = useGetInvoiceById(invoiceId);
+
+  if (isLoading) {
+    return (
+      <div className="pb-24 md:pb-0">
+        <InvoiceDetailsLoadingState />
+      </div>
+    );
+  }
+
+  if (isError || !invoice) {
+    const goBack = () => {
+      if (router.history.canGoBack()) {
+        router.history.back();
+      } else {
+        router.navigate({ to: "/invoices", replace: true });
+      }
+    };
+    return (
+      <div className="flex min-h-[60vh] flex-col">
+        <div className="mb-8">
+          <BackLink />
+        </div>
+        <ErrorState
+          title="We couldn't find this invoice"
+          message="It may have been deleted, or it never existed."
+          retryLabel="Go back"
+          onRetry={goBack}
+        />
+      </div>
+    );
+  }
+
+  return <LoadedInvoice invoice={invoice} />;
+}
+
+interface LoadedProps {
+  invoice: Invoice;
+}
+
+const LoadedInvoice: React.FC<LoadedProps> = ({ invoice }) => {
   const navigate = useNavigate();
+
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isMarkPaidOpen, setIsMarkPaidOpen] = useState(false);
   const [editValue, setEditValue] = useState<InvoiceFormValue>(() =>
     toFormValue(invoice),
   );
+
+  useLayoutEffect(() => {
+    const previous = document.title;
+    document.title = `Invoice ${invoice.id} | ${invoice.clientName}`;
+    return () => {
+      document.title = previous;
+    };
+  }, [invoice.id, invoice.clientName]);
 
   const openEdit = () => {
     setEditValue(toFormValue(invoice));
@@ -62,7 +122,7 @@ function ViewInvoiceScreen() {
           variant="default"
           size="small"
           text="Mark as Paid"
-          disabled={invoice.status !== "pending"}
+          onClick={() => setIsMarkPaidOpen(true)}
         />
       )}
     </>
@@ -70,13 +130,7 @@ function ViewInvoiceScreen() {
 
   return (
     <div className="pb-24 md:pb-0">
-      <Link
-        to="/invoices"
-        className="text-text group text-nm inline-flex flex-row items-center gap-x-6 font-bold tracking-[-0.25px] transition-opacity hover:opacity-70"
-      >
-        <FaChevronLeft size={10} className="text-primary" />
-        Go back
-      </Link>
+      <BackLink />
 
       <div className="bg-tile mt-8 flex flex-row items-center justify-between gap-x-4 rounded-lg px-6 py-6 md:px-8">
         <div className="flex flex-row items-center gap-x-5">
@@ -106,6 +160,12 @@ function ViewInvoiceScreen() {
         }}
       />
 
+      <MarkAsPaidModal
+        invoiceId={invoice.id}
+        open={isMarkPaidOpen}
+        onClose={() => setIsMarkPaidOpen(false)}
+      />
+
       {isEditOpen && (
         <EditInvoiceForm
           invoiceId={invoice.id}
@@ -116,6 +176,4 @@ function ViewInvoiceScreen() {
       )}
     </div>
   );
-}
-
-export default ViewInvoiceScreen;
+};

@@ -1,75 +1,90 @@
-# React + TypeScript + Vite
+# Invoicr — Invoice Management App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A responsive invoice management app built with React 19, TypeScript, and IndexedDB. Submitted for **HNG-14 Stage 2 Frontend Track**.
 
-Currently, two official plugins are available:
+Users can create, view, edit, delete, filter, and mark invoices as paid. Data persists locally via IndexedDB, theme preference persists via `localStorage`, and the UI adapts cleanly.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Design from [Figma File](https://www.figma.com/design/40HcEbp7sTVEinPMQKkRi9/invoice-app--Copy-?node-id=0-1&t=hO6jIR0Cid91w4kr-0).
 
-## React Compiler
+---
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Technologies used
 
-Note: This will impact Vite dev & build performances.
+- [React 19](https://react.dev/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Vite](https://vite.dev/)
+- [TanStack Router](https://tanstack.com/router)
+- [TanStack Query](https://tanstack.com/query)
+- [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) via [`idb`](https://github.com/jakearchibald/idb)
+- [Zod](https://zod.dev/)
+- [Tailwind CSS v4](https://tailwindcss.com/)
+- [League Spartan](https://fonts.google.com/specimen/League+Spartan) (Google Fonts)
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Running locally
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Prerequisites
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- [Node.js](https://nodejs.org/) 20 or newer
+- [pnpm](https://pnpm.io/) (recommended) — `npm install -g pnpm`
+- [Git](https://git-scm.com/)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 1. Clone the repository
+
+Using the [GitHub CLI](https://cli.github.com/):
+
+```bash
+gh repo clone https://github.com/Moluno-xiii/invoice-management-app-hng-14-stage-2-FE-task
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Or with plain git:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone https://github.com/Moluno-xiii/invoice-management-app-hng-14-stage-2-FE-task
 ```
+
+Then enter the project directory:
+
+```bash
+cd invoice-management-app-hng-14-stage-2-FE-task
+```
+
+### 2. Install dependencies
+
+```bash
+pnpm install
+```
+
+### 3. Run the dev server
+
+```bash
+pnpm dev
+```
+
+The app will be available at [http://localhost:5173](http://localhost:5173).
+
+### Build & preview
+
+```bash
+pnpm build
+pnpm preview
+```
+
+---
+
+## Features
+
+- **CRUD** — create, read, update, delete invoices.
+- **Filter** — multi-select status filter (Paid / Pending / Draft).
+- **Theme toggle** — light / dark / system-auto, persisted in `localStorage`, applied pre-paint so there's no flash.
+- **Validation** — required fields, email format, ≥1 item, non-negative quantity & price.
+- **Local persistence** — IndexedDB survives reload; user edits preserved.
+- **Loading / error states** — skeleton invoice rows + centered error with retry.
+- `and of course` **Fully Responsive** — mobile, tablet, and desktop layouts tested down to 320 px.
+
+---
+
+## Author
+
+Built by **@Moluno-xiii** for HNG-14 Stage 2 Frontend.

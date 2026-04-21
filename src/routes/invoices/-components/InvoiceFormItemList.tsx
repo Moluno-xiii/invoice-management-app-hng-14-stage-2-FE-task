@@ -1,5 +1,6 @@
 import Input from "@/components/shared/Input";
 import { formatAmount } from "@/lib/invoice";
+import type { InvoiceFormErrors } from "@/lib/form-errors";
 import type { InvoiceFormValue, InvoiceItem } from "@/types";
 import { FaTrash } from "react-icons/fa6";
 
@@ -9,9 +10,10 @@ interface Props {
     key: K,
     v: InvoiceFormValue[K],
   ) => void;
+  errors?: InvoiceFormErrors;
 }
 
-const InvoiceFormItemList: React.FC<Props> = ({ value, set }) => {
+const InvoiceFormItemList: React.FC<Props> = ({ value, set, errors }) => {
   const updateItem = (index: number, patch: Partial<InvoiceItem>) => {
     const next = value.items.map((item, i) =>
       i === index ? { ...item, ...patch } : item,
@@ -27,6 +29,8 @@ const InvoiceFormItemList: React.FC<Props> = ({ value, set }) => {
       "items",
       value.items.filter((_, i) => i !== index),
     );
+
+  const itemsError = errors?.["items"];
 
   return (
     <section>
@@ -44,16 +48,18 @@ const InvoiceFormItemList: React.FC<Props> = ({ value, set }) => {
               wrapperClassName="col-span-4 md:col-span-1"
               value={item.name}
               onChange={(e) => updateItem(index, { name: e.target.value })}
+              error={errors?.[`items.${index}.name`]}
             />
             <Input
               label="Qty."
               wrapperClassName="col-span-1"
               type="number"
               min={0}
-              value={item.quantity}
+              value={item.quantity === 0 ? "" : item.quantity}
               onChange={(e) =>
                 updateItem(index, { quantity: Number(e.target.value) || 0 })
               }
+              error={errors?.[`items.${index}.quantity`]}
             />
             <Input
               label="Price"
@@ -61,10 +67,11 @@ const InvoiceFormItemList: React.FC<Props> = ({ value, set }) => {
               type="number"
               min={0}
               step="0.01"
-              value={item.price}
+              value={item.price === 0 ? "" : item.price}
               onChange={(e) =>
                 updateItem(index, { price: Number(e.target.value) || 0 })
               }
+              error={errors?.[`items.${index}.price`]}
             />
             <div className="col-span-1 flex flex-col gap-y-2.25">
               <span className="text-text-accent text-sml font-medium tracking-[-0.1px]">
@@ -85,6 +92,11 @@ const InvoiceFormItemList: React.FC<Props> = ({ value, set }) => {
           </li>
         ))}
       </ul>
+      {itemsError && (
+        <p className="text-error text-sml mt-4 font-medium tracking-[-0.1px]">
+          {itemsError}
+        </p>
+      )}
       <button
         type="button"
         onClick={addItem}

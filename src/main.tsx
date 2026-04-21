@@ -5,6 +5,9 @@ import { routeTree } from "./routeTree.gen";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./index.css";
 import NotFound from "@/components/NotFound.tsx";
+import { seedIfEmpty } from "@/lib/db";
+
+seedIfEmpty().catch((e) => console.error("Failed to seed invoice DB", e));
 
 const router = createRouter({
   routeTree,
@@ -21,7 +24,15 @@ declare module "@tanstack/react-router" {
   }
 }
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: Infinity,
+      refetchOnMount: true,
+      refetchOnWindowFocus: true,
+    },
+  },
+});
 
 const rootElement = document.getElementById("root")!;
 if (!rootElement.innerHTML) {

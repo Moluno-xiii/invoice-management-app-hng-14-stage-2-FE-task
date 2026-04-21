@@ -8,7 +8,7 @@ const stats: { value: string; label: string }[] = [
 const NumbersSection = () => (
   <section id="numbers" className="relative px-6 pb-24 md:px-10 md:pb-32">
     <div className="border-input-border/60 mx-auto max-w-310 border-t pt-16 md:pt-24">
-      <div className="grid grid-cols-2 gap-10 md:grid-cols-4 md:gap-6">
+      <div className="grid grid-cols-2 place-items-center-safe gap-10 md:grid-cols-4 md:gap-6">
         {stats.map((s) => (
           <div key={s.label} className="flex flex-col gap-y-3">
             <p className="text-text text-5xl font-bold tracking-[-2px] md:text-7xl md:tracking-[-3px]">

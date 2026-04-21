@@ -2,6 +2,7 @@ import Input from "@/components/shared/Input";
 import Select from "@/components/shared/Select";
 import TextArea from "@/components/shared/TextArea";
 import { paymentTermOptions } from "@/data";
+import type { InvoiceFormErrors } from "@/lib/form-errors";
 import type { Address, Invoice, InvoiceFormValue } from "@/types";
 import InvoiceFormClientAddressContainer from "./InvoiceFormClientAddressContainer";
 import InvoiceFormItemList from "./InvoiceFormItemList";
@@ -10,9 +11,10 @@ import InvoiceFormSenderAddressContainer from "./InvoiceFormSenderAddressContain
 interface Props {
   value: InvoiceFormValue;
   onChange: (next: InvoiceFormValue) => void;
+  errors?: InvoiceFormErrors;
 }
 
-const InvoiceForm: React.FC<Props> = ({ value, onChange }) => {
+const InvoiceForm: React.FC<Props> = ({ value, onChange, errors }) => {
   const set = <K extends keyof InvoiceFormValue>(
     key: K,
     v: InvoiceFormValue[K],
@@ -23,11 +25,16 @@ const InvoiceForm: React.FC<Props> = ({ value, onChange }) => {
 
   return (
     <div className="flex flex-col gap-y-12">
-      <InvoiceFormSenderAddressContainer value={value} set={set} />
+      <InvoiceFormSenderAddressContainer
+        value={value}
+        set={set}
+        errors={errors}
+      />
       <InvoiceFormClientAddressContainer
         value={value}
         setClient={setClient}
         set={set}
+        errors={errors}
       />
       <section>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -36,6 +43,7 @@ const InvoiceForm: React.FC<Props> = ({ value, onChange }) => {
             type="date"
             value={value.createdAt}
             onChange={(e) => set("createdAt", e.target.value)}
+            error={errors?.["createdAt"]}
           />
           <Select
             label="Payment Terms"
@@ -44,6 +52,7 @@ const InvoiceForm: React.FC<Props> = ({ value, onChange }) => {
               set("paymentTerms", Number(v) as Invoice["paymentTerms"])
             }
             options={paymentTermOptions}
+            error={errors?.["paymentTerms"]}
           />
         </div>
         <div className="mt-6">
@@ -53,10 +62,11 @@ const InvoiceForm: React.FC<Props> = ({ value, onChange }) => {
             value={value.description}
             onChange={(e) => set("description", e.target.value)}
             rows={2}
+            error={errors?.["description"]}
           />
         </div>
       </section>
-      <InvoiceFormItemList value={value} set={set} />
+      <InvoiceFormItemList value={value} set={set} errors={errors} />
     </div>
   );
 };

@@ -1,5 +1,4 @@
 import type { Invoice, InvoiceItem } from "@/types";
-import { mockInvoices } from "./mock-invoices";
 
 const itemTotal = (item: InvoiceItem) => item.quantity * item.price;
 
@@ -21,7 +20,10 @@ const formatDate = (iso: string) => {
   });
 };
 
-const getInvoiceById = (id: string) =>
-  mockInvoices.find((invoice) => invoice.id === id);
+const getTodaysDate = () => {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
 
-export { itemTotal, getInvoiceTotal, formatAmount, formatDate, getInvoiceById };
+export { itemTotal, getInvoiceTotal, formatAmount, formatDate, getTodaysDate };

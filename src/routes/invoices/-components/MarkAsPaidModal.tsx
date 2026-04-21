@@ -1,21 +1,15 @@
 import Button from "@/components/shared/Button";
-import useDeleteInvoice from "@/hooks/tanstack/useDeleteInvoice";
+import { useMarkInvoiceAsPaid } from "@/hooks/tanstack/useUpdateInvoice";
 import { useEffect } from "react";
 
 interface Props {
   invoiceId: string;
   open: boolean;
   onClose: () => void;
-  onConfirm: () => void;
 }
 
-const DeleteInvoiceModal: React.FC<Props> = ({
-  invoiceId,
-  open,
-  onClose,
-  onConfirm,
-}) => {
-  const deleteInvoice = useDeleteInvoice();
+const MarkAsPaidModal: React.FC<Props> = ({ invoiceId, open, onClose }) => {
+  const markAsPaid = useMarkInvoiceAsPaid();
 
   useEffect(() => {
     if (!open) return;
@@ -32,17 +26,17 @@ const DeleteInvoiceModal: React.FC<Props> = ({
 
   if (!open) return null;
 
-  const handleDelete = () => {
-    deleteInvoice.mutate(invoiceId, { onSuccess: onConfirm });
+  const confirm = () => {
+    markAsPaid.mutate(invoiceId, { onSuccess: onClose });
   };
 
-  const pending = deleteInvoice.isPending;
+  const pending = markAsPaid.isPending;
 
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-labelledby="delete-invoice-title"
+      aria-labelledby="mark-paid-title"
       className="fixed inset-0 z-50 flex items-center justify-center px-6"
     >
       <button
@@ -53,23 +47,23 @@ const DeleteInvoiceModal: React.FC<Props> = ({
       />
       <div className="bg-tile relative z-10 flex w-full max-w-120 flex-col gap-y-3 rounded-lg p-12">
         <h2
-          id="delete-invoice-title"
+          id="mark-paid-title"
           className="text-text text-2xl font-bold tracking-[-0.5px]"
         >
-          Confirm Deletion
+          Mark as Paid?
         </h2>
         <p className="text-text-accent text-sml leading-4.5 font-medium tracking-[-0.1px]">
-          Are you sure you want to delete invoice #{invoiceId}? This action
-          cannot be undone.
+          This will change invoice #{invoiceId} to <b>Paid</b>. You can still
+          edit the invoice afterwards.
         </p>
-        {deleteInvoice.isError && (
+        {markAsPaid.isError && (
           <p
             role="alert"
             className="text-error text-sml font-medium tracking-[-0.1px]"
           >
-            {deleteInvoice.error instanceof Error
-              ? deleteInvoice.error.message
-              : "Couldn't delete invoice. Try again."}
+            {markAsPaid.error instanceof Error
+              ? markAsPaid.error.message
+              : "Couldn't update invoice. Try again."}
           </p>
         )}
         <div className="mt-4 flex flex-row items-center justify-end gap-x-2">
@@ -81,10 +75,10 @@ const DeleteInvoiceModal: React.FC<Props> = ({
             disabled={pending}
           />
           <Button
-            variant="error"
+            variant="default"
             size="small"
-            text={pending ? "Deleting…" : "Delete"}
-            onClick={handleDelete}
+            text={pending ? "Saving…" : "Mark as Paid"}
+            onClick={confirm}
             disabled={pending}
           />
         </div>
@@ -93,4 +87,4 @@ const DeleteInvoiceModal: React.FC<Props> = ({
   );
 };
 
-export default DeleteInvoiceModal;
+export default MarkAsPaidModal;

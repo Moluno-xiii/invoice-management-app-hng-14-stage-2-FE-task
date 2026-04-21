@@ -1,20 +1,23 @@
 import Button from "@/components/shared/Button";
-import { mockInvoices } from "@/lib/mock-invoices";
+import ErrorState from "@/components/shared/ErrorState";
+import InvoiceListLoadingState from "@/components/shared/InvoiceListLoadingState";
+import { useGetInvoices } from "@/hooks/tanstack/useGetInvoices";
 import type { InvoiceFormValue, InvoicePaymentStatus } from "@/types";
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import CreateInvoiceForm from "./-components/CreateInvoiceForm";
 import FilterDropdown from "./-components/FilterDropdown";
 import InvoiceDisplay from "./-components/InvoiceDisplay";
 import InvoiceEmptyState from "./-components/InvoiceEmptyState";
+import { getTodaysDate } from "@/lib/invoice";
 
 const emptyInvoiceFormValue = (): InvoiceFormValue => ({
   senderAddress: { street: "", city: "", postCode: "", country: "" },
   clientName: "",
   clientEmail: "",
   clientAddress: { street: "", city: "", postCode: "", country: "" },
-  createdAt: new Date().toISOString().slice(0, 10),
+  createdAt: getTodaysDate(),
   paymentTerms: 30,
   description: "",
   items: [],
@@ -28,20 +31,35 @@ const InvoicesIndexScreen = () => {
     emptyInvoiceFormValue(),
   );
 
+  useLayoutEffect(() => {
+    const previousTitle = document.title;
+    document.title = `Invoicr | All invoices`;
+
+    return () => {
+      document.title = previousTitle;
+    };
+  }, []);
+
   const openNew = () => {
     setNewValue(emptyInvoiceFormValue());
     setIsCreateNewInvoiceFormOpen(true);
   };
 
-  const visibleInvoices = useMemo(() => {
-    if (filter.size === 0) return mockInvoices;
-    return mockInvoices.filter((invoice) => filter.has(invoice.status));
-  }, [filter]);
+  const { data: invoices, isLoading, isError, refetch } = useGetInvoices();
 
-  const subtitle =
-    visibleInvoices.length === 0
-      ? "No invoices"
-      : `There ${visibleInvoices.length === 1 ? "is" : "are"} ${visibleInvoices.length} total ${filter.size > 0 ? "filtered " : ""}invoice${visibleInvoices.length === 1 ? "" : "s"}`;
+  const visibleInvoices = useMemo(() => {
+    if (!invoices) return [];
+    if (filter.size === 0) return invoices;
+    return invoices.filter((invoice) => filter.has(invoice.status));
+  }, [filter, invoices]);
+
+  const subtitle = isLoading
+    ? "Loading invoices…"
+    : isError
+      ? "Couldn't load invoices"
+      : visibleInvoices.length === 0
+        ? "No invoices"
+        : `There ${visibleInvoices.length === 1 ? "is" : "are"} ${visibleInvoices.length} total ${filter.size > 0 ? "filtered " : ""}invoice${visibleInvoices.length === 1 ? "" : "s"}`;
 
   return (
     <div className="flex h-full flex-col">
@@ -74,8 +92,23 @@ const InvoicesIndexScreen = () => {
         </div>
       </header>
 
-      {visibleInvoices.length === 0 ? (
-        <InvoiceEmptyState />
+      {isLoading ? (
+        <InvoiceListLoadingState />
+      ) : isError ? (
+        <ErrorState
+          title="We couldn't load your invoices"
+          message="There was a problem reading from your local invoice store. Try again in a moment."
+          onRetry={() => refetch()}
+        />
+      ) : visibleInvoices.length === 0 ? (
+        <InvoiceEmptyState
+          variant={
+            invoices && invoices.length > 0 && filter.size > 0
+              ? "filter-empty"
+              : "no-invoices"
+          }
+          onClearFilter={() => setFilter(new Set())}
+        />
       ) : (
         <InvoiceDisplay invoices={visibleInvoices} />
       )}

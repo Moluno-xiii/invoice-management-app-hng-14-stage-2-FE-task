@@ -58,9 +58,6 @@ const ThemeToggle = () => {
     const nextMode: ThemeMode =
       mode === "light" ? "dark" : mode === "dark" ? "light" : "light";
     setMode(nextMode);
-    console.log("current mode", mode);
-    console.log("next mode", nextMode);
-    applyThemeMode(nextMode);
     window.localStorage.setItem("theme", nextMode);
   }
 
